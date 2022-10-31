@@ -7,7 +7,7 @@ pipeline {
                      defaultValue: false,
                      description: 'If enabled the whole workspace will be cleaned before the pipeline starts.')
         string(name: 'PACKAGES',
-               defaultValue: 'd3f_app RepoTrend Limex JSONForUG4',
+               defaultValue: 'ConvectionDiffusion Limex JSONForUG4',
                description: 'Packages to install (use spaces to separate multiple packages).')
         string(name: 'CXX_FLAGS',
                defaultValue: '-fprofile-arcs -ftest-coverage -fPIC',
