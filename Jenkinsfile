@@ -69,12 +69,11 @@ pipeline {
                     sh 'ughub install ${PACKAGES}'
 
                     // Legacy testsuite is required for testing.
-                    sh 'ughub install unit_tests'
-                    sh 'ughub git submodule init'
-                    sh 'ughub git submodule update'
+                    // sh 'ughub install unit_tests'
                 }
             }
         }
+
 
         stage('Init UG4 submodules') {
             steps {
