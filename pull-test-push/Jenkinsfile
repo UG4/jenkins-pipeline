@@ -5,17 +5,17 @@ pipeline {
     agent any
         // Mods including submodule behaviour 
     environment {
-        GITLAB_CREDS = credentials('gitLabToken')
-        GITHUB_CREDS = credentials('gitHubToken')
+        // GITLAB_CREDS = credentials('gitLabToken')
+        // GITHUB_CREDS = credentials('gitHubToken')
 
         DRIVER_REPO="https://gitlab.com/${GITLAB_CREDS_USR}/jenkinshalloworld.git"
-        REPO_2_NAME="jenkinsRepo2"
-        REPO_3_NAME="jenkinsRepo3"
-        REPO_4_NAME="jenkinsRepo4"
+        REPO_2_NAME="ughub"
+        REPO_3_NAME="ugcore"
+        // REPO_4_NAME="jenkinsRepo4"
         REPO_2="https://github.com/${GITHUB_CREDS_USR}/${REPO_2_NAME}.git"
         REPO_3="https://github.com/${GITHUB_CREDS_USR}/${REPO_3_NAME}.git"
-        REPO_4="https://github.com/${GITHUB_CREDS_USR}/${REPO_4_NAME}.git"
-        DEV_BRANCH="main"
+        // REPO_4="https://github.com/${GITHUB_CREDS_USR}/${REPO_4_NAME}.git"
+        DEV_BRANCH="master"
         STABLE_BRANCH="stable"
     }
     stages {
