@@ -1,7 +1,7 @@
-# File by https://gitlab.com/0xanselm/jenkinshalloworld/-/blob/main/Jenkinsfile
+// File by https://gitlab.com/0xanselm/jenkinshalloworld/-/blob/main/Jenkinsfile
 
 pipeline {
-    Analyze use of tags, s.t. a rc is only build when there is a special tag in the commit
+    // Analyze use of tags, s.t. a rc is only build when there is a special tag in the commit
     agent any
         // Mods including submodule behaviour 
     environment {
