@@ -1,0 +1,122 @@
+# File by https://gitlab.com/0xanselm/jenkinshalloworld/-/blob/main/Jenkinsfile
+
+pipeline {
+    Analyze use of tags, s.t. a rc is only build when there is a special tag in the commit
+    agent any
+        // Mods including submodule behaviour 
+    environment {
+        GITLAB_CREDS = credentials('gitLabToken')
+        GITHUB_CREDS = credentials('gitHubToken')
+
+        DRIVER_REPO="https://gitlab.com/${GITLAB_CREDS_USR}/jenkinshalloworld.git"
+        REPO_2_NAME="jenkinsRepo2"
+        REPO_3_NAME="jenkinsRepo3"
+        REPO_4_NAME="jenkinsRepo4"
+        REPO_2="https://github.com/${GITHUB_CREDS_USR}/${REPO_2_NAME}.git"
+        REPO_3="https://github.com/${GITHUB_CREDS_USR}/${REPO_3_NAME}.git"
+        REPO_4="https://github.com/${GITHUB_CREDS_USR}/${REPO_4_NAME}.git"
+        DEV_BRANCH="main"
+        STABLE_BRANCH="stable"
+    }
+    stages {
+        stage('Checkout main repo') {
+            steps {
+                checkout([$class: 'GitSCM', 
+                branches: [[name: "*/${DEV_BRANCH}"], [name: "*/{STABLE_BRANCH}"]], 
+                extensions: [[
+                    $class: 'SubmoduleOption', 
+                    disableSubmodules: false, 
+                    parentCredentials: true, 
+                    recursiveSubmodules: true, 
+                    reference: './', 
+                    trackingSubmodules: true]], 
+                    userRemoteConfigs: [[credentialsId: 'gitHubToken', url: 'https://github.com/0xAnselm/jenkinsRepo2.git']]])
+            }
+        }
+        stage('Setting git env and fetching submodules') {
+            steps {
+                withCredentials([gitUsernamePassword(credentialsId: 'gitHubToken', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME',
+                    gitToolName: 'git-tool')]) {
+                    sh ("git --version")
+                    sh ("git config --global user.email ${GIT_USERNAME}@test.com")
+                    sh ("git config --global user.name ${GIT_USERNAME}")
+                    sh ("git config --global push.default matching")
+                    sh ("git submodule foreach 'git fetch'")
+                    sh ("git submodule foreach 'git branch -a'")
+                    sh ("git submodule foreach 'git checkout ${DEV_BRANCH}'")
+                    sh ("git remote -v")
+                }
+            }
+        }
+        stage('Perform the work') {
+            steps{
+                withCredentials([gitUsernamePassword(credentialsId: 'gitHubToken', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME',
+                    gitToolName: 'git-tool')]) {
+                    sh ('pwd')
+                    sh ("date +'%D %T.%3N' >> ./${REPO_2_NAME}_myfile")
+                    sh ("date +'%D %T.%3N' >> ./${REPO_3_NAME}/${REPO_3_NAME}_myfile")
+                    sh ('ls -a')
+                    sh ('tree .')
+                    sh ("cat .gitmodules")
+                }
+            }
+        }
+        stage('Testing stage') {
+            steps {
+                sh ("python -m unittest test_calc.py")
+                script {
+                    if ("${currentBuild.currentResult}" == 'SUCCESS') {
+                        echo 'hallo'
+                    } else {
+                        echo 'not so happy now, are we?'
+                    }
+                }
+            }
+        }
+        stage('Add, commit and push to respective repos') {
+            steps{
+                withCredentials([gitUsernamePassword(credentialsId: 'gitHubToken', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME',
+                    gitToolName: 'git-tool')]) {
+                    sh ("git add *")
+                    sh ("git submodule foreach 'git add *'")
+                    sh ("git submodule foreach 'git commit -a -m 'testing'' || true")
+                    sh ("git submodule foreach 'git push origin ${DEV_BRANCH}'")
+                    sh ("git add *")
+                    sh ("git commit -a -m 'testing' || true")
+                    sh ("git push --recurse-submodules=on-demand https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${GIT_USERNAME}/${REPO_2_NAME}.git HEAD:${DEV_BRANCH}")
+                    sh ("git status")
+                }
+            }
+        }
+        stage("Add, commit and push to respective repos to STABLE_BRANCH") {
+            steps{
+                withCredentials([gitUsernamePassword(credentialsId: 'gitHubToken', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME',
+                    gitToolName: 'git-tool')]) {
+                    sh ("git submodule foreach 'git checkout --merge ${STABLE_BRANCH}'")
+                    // sh ("git submodule foreach 'git merge ${DEV_BRANCH}'")
+                    // sh ("git submodule foreach 'git push origin'")
+                    sh ("git add *")
+                    sh ("git commit -a -m 'testing' || true")
+                    sh ('git push --recurse-submodules=on-demand https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${GIT_USERNAME}/${REPO_2_NAME}.git HEAD:${STABLE_BRANCH}')
+                    sh ("git status")
+                }
+            }
+        }
+    }
+    post { 
+        always { 
+            echo 'I will always clean'
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") {
+                deleteDir()
+            }
+        }
+        success {
+            echo 'Yippiiiieeee'
+            // mail bcc: '', body: 'Information Information Information Information ', cc: '', from: 'jenkins@localserver.com', replyTo: '', subject: 'Successfull Build', to: 'commercial.atway@gmail.com'
+        }
+        failure {
+            echo ':('
+        }
+    }
+}
