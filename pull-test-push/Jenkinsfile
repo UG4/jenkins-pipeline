@@ -21,16 +21,17 @@ pipeline {
     stages {
         stage('Checkout main repo') {
             steps {
-                checkout([$class: 'GitSCM', 
-                branches: [[name: "*/${DEV_BRANCH}"], [name: "*/{STABLE_BRANCH}"]], 
-                extensions: [[
-                    $class: 'SubmoduleOption', 
-                    disableSubmodules: false, 
-                    parentCredentials: true, 
-                    recursiveSubmodules: true, 
-                    reference: './', 
-                    trackingSubmodules: true]], 
-                    userRemoteConfigs: [[credentialsId: 'gitHubToken', url: 'https://github.com/0xAnselm/jenkinsRepo2.git']]])
+                checkout(
+                    [$class: 'GitSCM', 
+                        branches: [[name: "*/${DEV_BRANCH}"], [name: "*/{STABLE_BRANCH}"]], 
+                        extensions: [[$class: 'SubmoduleOption', 
+                                        disableSubmodules: false, 
+                                        parentCredentials: true, 
+                                        recursiveSubmodules: true, 
+                                        reference: './', 
+                                        trackingSubmodules: true]], 
+                        userRemoteConfigs: [[credentialsId: 'gitHubToken', url: 'https://github.com/0xAnselm/jenkinsRepo2.git']]
+                    ])
             }
         }
         stage('Setting git env and fetching submodules') {
