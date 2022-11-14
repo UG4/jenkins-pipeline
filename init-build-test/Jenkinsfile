@@ -57,7 +57,8 @@ pipeline {
         stage('Install UG4') {
             steps {
                 echo 'Stage: Install'
-
+                sh 'env'
+                
                 sh 'git clone https://github.com/UG4/ughub.git || true'
                 sh 'mkdir -p $WORKSPACE/ug4'
                 dir("$WORKSPACE/ug4") {
